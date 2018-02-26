@@ -2,15 +2,18 @@
 import scrapy
 from qianmu.items import UniversityItem
 
+# 新建一个爬虫的类
 class UniversitySpider(scrapy.Spider):
     name = 'university'
     allowed_domains = ['qianmu.iguye.com']
     start_urls = ['http://qianmu.iguye.com/2018USNEWS%E4%B8%96%E7%95%8C%E5%A4%A7%E5%AD%A6%E6%8E%92%E5%90%8D']
 
+    # 初始化
     def __init__(self, max_num=0, *args, **kwargs):
         super(UniversitySpider, self).__init__(*args, **kwargs)
         self.max_num = int(max_num)
 
+    # 爬取每一页大学链接
     def parse(self, response):
         links = response.xpath("//*[@id='content']/table/tbody/tr/td[2]/a/@href").extract()
         for i, link in enumerate(links):
@@ -23,6 +26,7 @@ class UniversitySpider(scrapy.Spider):
             request.meta['rank'] = i + 1
             yield request
 
+    # 爬取大学链接中大学信息
     def parse_university(self, response):
         response = response.replace(body=response.text.replace('\t', ''))
         self.logger.info(response.url)
@@ -44,5 +48,6 @@ class UniversitySpider(scrapy.Spider):
         item['postgraduate_num'] = data.get('研究生人数', '')
         item['website'] = data.get('网址', '')
         # item.update(zip(keys, values))
+        # 打印日志信息
         self.logger.info('item %s scraped' % item['name'])
         yield item
